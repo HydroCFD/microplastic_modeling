@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microplastic Modeling in Water Systems</title>
+<meta name="description" content="GPU-accelerated Eulerian–Lagrangian numerical framework for microplastic transport in open-channel flows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-deep:#03101e;
+  --bg-mid:#062338;
+  --bg-teal:#083344;
+  --ink:#e8f4fb;
+  --ink-dim:#9db8c9;
+  --cyan:#22d3ee;
+  --aqua:#34e6c0;
+  --blue:#3b82f6;
+  --violet:#8b5cf6;
+  --amber:#fbbf24;
+  --card:rgba(255,255,255,0.045);
+  --card-border:rgba(120,200,255,0.14);
+  --glow:0 0 40px rgba(34,211,238,0.25);
+  --radius:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  background:var(--bg-deep);
+  color:var(--ink);
+  overflow-x:hidden;
+  line-height:1.6;
+}
+::selection{background:rgba(34,211,238,.35)}
+
+/* ---------- animated aurora background ---------- */
+.aurora{
+  position:fixed;inset:0;z-index:-2;
+  background:
+    radial-gradient(60% 50% at 15% 20%, rgba(59,130,246,.16), transparent 60%),
+    radial-gradient(50% 45% at 85% 15%, rgba(139,92,246,.13), transparent 60%),
+    radial-gradient(55% 55% at 70% 85%, rgba(52,230,192,.10), transparent 60%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 45%, var(--bg-teal) 100%);
+}
+.aurora::before{
+  content:"";position:absolute;inset:-30%;
+  background:
+    radial-gradient(35% 30% at 30% 40%, rgba(34,211,238,.10), transparent 70%),
+    radial-gradient(30% 30% at 70% 60%, rgba(139,92,246,.09), transparent 70%);
+  animation:aurora-drift 26s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift{
+  0%{transform:translate(-4%,-3%) rotate(-2deg) scale(1)}
+  100%{transform:translate(4%,4%) rotate(2.5deg) scale(1.08)}
+}
+
+/* ---------- particle canvas ---------- */
+#flow-canvas{position:fixed;inset:0;z-index:-1;pointer-events:none}
+
+/* ---------- nav ---------- */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 32px;
+  backdrop-filter:blur(14px);
+  background:rgba(3,16,30,.55);
+  border-bottom:1px solid rgba(120,200,255,.08);
+  transition:background .3s;
+}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.02rem;letter-spacing:.3px;text-decoration:none;color:var(--ink)}
+.logo-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--aqua), var(--blue));
+  box-shadow:0 0 14px rgba(34,211,238,.8);
+  animation:pulse-dot 2.6s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+.nav-links{display:flex;gap:26px}
+.nav-links a{
+  color:var(--ink-dim);text-decoration:none;font-size:.92rem;font-weight:500;
+  position:relative;transition:color .25s;
+}
+.nav-links a::after{
+  content:"";position:absolute;left:0;bottom:-5px;height:2px;width:0;
+  background:linear-gradient(90deg,var(--cyan),var(--aqua));
+  border-radius:2px;transition:width .3s;
+}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a:hover::after{width:100%}
+@media(max-width:720px){.nav-links{display:none}}
+
+/* ---------- hero ---------- */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:120px 24px 80px;position:relative;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 18px;border-radius:999px;
+  border:1px solid rgba(52,230,192,.35);
+  background:rgba(52,230,192,.08);
+  color:var(--aqua);font-size:.82rem;font-weight:600;letter-spacing:1.4px;
+  text-transform:uppercase;
+  animation:float-badge 5s ease-in-out infinite;
+}
+@keyframes float-badge{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.badge .spark{animation:spin 6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{
+  margin-top:26px;
+  font-size:clamp(2.4rem, 6.5vw, 4.6rem);
+  font-weight:700;line-height:1.12;letter-spacing:-1px;
+  max-width:1000px;
+}
+.gradient-text{
+  background:linear-gradient(92deg,var(--cyan) 0%,var(--aqua) 30%,var(--blue) 65%,var(--violet) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:shimmer 7s ease-in-out infinite;
+}
+@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+.hero-sub{
+  margin-top:22px;max-width:720px;
+  color:var(--ink-dim);font-size:clamp(1rem,2vw,1.22rem);
+}
+.hero-sub b{color:var(--ink);font-weight:600}
+.hero-cta{margin-top:40px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:14px 30px;border-radius:14px;text-decoration:none;
+  font-weight:600;font-size:1rem;transition:transform .25s, box-shadow .25s;
+}
+.btn-primary{
+  color:#02141f;
+  background:linear-gradient(120deg,var(--cyan),var(--aqua));
+  box-shadow:0 8px 30px rgba(34,211,238,.35);
+}
+.btn-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 14px 44px rgba(34,211,238,.5)}
+.btn-ghost{
+  color:var(--ink);border:1px solid var(--card-border);
+  background:var(--card);backdrop-filter:blur(8px);
+}
+.btn-ghost:hover{transform:translateY(-3px);border-color:rgba(34,211,238,.5);box-shadow:var(--glow)}
+.scroll-hint{
+  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  color:var(--ink-dim);font-size:1.5rem;animation:bob 2s ease-in-out infinite;text-decoration:none;
+}
+@keyframes bob{0%,100%{transform:translate(-50%,0);opacity:.5}50%{transform:translate(-50%,10px);opacity:1}}
+
+/* ---------- wave divider ---------- */
+.wave-divider{display:block;width:100%;height:90px;margin-top:-1px}
+.wave-divider path{animation:wave-shift 9s ease-in-out infinite alternate}
+@keyframes wave-shift{from{d:path("M0,40 C240,90 480,0 720,40 C960,80 1200,10 1440,50 L1440,100 L0,100 Z")}to{d:path("M0,55 C240,10 480,85 720,45 C960,5 1200,80 1440,35 L1440,100 L0,100 Z")}}
+
+/* ---------- sections ---------- */
+section{padding:110px 24px;position:relative}
+.container{max-width:1120px;margin:0 auto}
+.section-tag{
+  color:var(--aqua);font-size:.8rem;font-weight:700;letter-spacing:2.5px;
+  text-transform:uppercase;display:block;text-align:center;
+}
+.section-title{
+  text-align:center;font-size:clamp(1.7rem,4vw,2.7rem);font-weight:700;
+  margin:12px auto 14px;letter-spacing:-.5px;max-width:800px;
+}
+.section-lead{text-align:center;color:var(--ink-dim);max-width:680px;margin:0 auto 60px;font-size:1.05rem}
+
+/* reveal on scroll */
+.reveal{opacity:0;transform:translateY(38px);transition:opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1)}
+.reveal.visible{opacity:1;transform:none}
+
+/* ---------- feature cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.card{
+  position:relative;padding:34px 28px;border-radius:var(--radius);
+  background:var(--card);border:1px solid var(--card-border);
+  backdrop-filter:blur(10px);overflow:hidden;
+  transition:transform .35s cubic-bezier(.2,.7,.3,1), border-color .35s, box-shadow .35s;
+}
+.card::before{
+  content:"";position:absolute;inset:0;opacity:0;transition:opacity .4s;
+  background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%), rgba(34,211,238,.12), transparent 45%);
+  pointer-events:none;
+}
+.card:hover{transform:translateY(-8px);border-color:rgba(34,211,238,.4);box-shadow:0 18px 50px rgba(0,0,0,.45), var(--glow)}
+.card:hover::before{opacity:1}
+.card-icon{
+  width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-size:1.7rem;margin-bottom:20px;
+  background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(139,92,246,.18));
+  border:1px solid rgba(34,211,238,.25);
+  transition:transform .4s;
+}
+.card:hover .card-icon{transform:rotate(-8deg) scale(1.12)}
+.card h3{font-size:1.18rem;margin-bottom:10px;font-weight:600}
+.card p{color:var(--ink-dim);font-size:.95rem}
+
+/* ---------- physics ticker ---------- */
+.ticker-wrap{
+  overflow:hidden;padding:26px 0;
+  border-top:1px solid rgba(120,200,255,.09);
+  border-bottom:1px solid rgba(120,200,255,.09);
+  background:rgba(255,255,255,.02);
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+}
+.ticker{display:flex;gap:56px;width:max-content;animation:ticker-scroll 30s linear infinite}
+.ticker-wrap:hover .ticker{animation-play-state:paused}
+.ticker span{
+  font-family:'JetBrains Mono',monospace;font-size:.98rem;color:var(--ink-dim);
+  display:flex;align-items:center;gap:12px;white-space:nowrap;
+}
+.ticker span::before{content:"◆";color:var(--cyan);font-size:.7rem}
+@keyframes ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- pipeline ---------- */
+.pipeline{display:flex;align-items:stretch;justify-content:center;gap:0;flex-wrap:wrap;margin-top:20px}
+.pipe-step{
+  flex:1;min-width:200px;max-width:260px;text-align:center;padding:30px 18px;
+  border-radius:var(--radius);background:var(--card);border:1px solid var(--card-border);
+  margin:10px;position:relative;transition:transform .3s, border-color .3s;
+}
+.pipe-step:hover{transform:translateY(-6px);border-color:rgba(52,230,192,.45)}
+.pipe-num{
+  width:44px;height:44px;margin:0 auto 16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.05rem;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));color:#02141f;
+  box-shadow:0 0 22px rgba(34,211,238,.45);
+}
+.pipe-step h4{font-size:1.05rem;margin-bottom:8px}
+.pipe-step p{color:var(--ink-dim);font-size:.88rem}
+.pipe-arrow{align-self:center;color:var(--cyan);font-size:1.6rem;animation:arrow-nudge 1.6s ease-in-out infinite}
+@keyframes arrow-nudge{0%,100%{transform:translateX(0);opacity:.5}50%{transform:translateX(7px);opacity:1}}
+@media(max-width:900px){.pipe-arrow{transform:rotate(90deg)}@keyframes arrow-nudge{0%,100%{transform:rotate(90deg) translateX(0);opacity:.5}50%{transform:rotate(90deg) translateX(7px);opacity:1}}}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;text-align:center}
+.stat{padding:36px 20px;border-radius:var(--radius);background:var(--card);border:1px solid var(--card-border)}
+.stat-value{
+  font-size:clamp(2rem,4vw,2.9rem);font-weight:700;
+  background:linear-gradient(90deg,var(--cyan),var(--aqua));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.stat-label{color:var(--ink-dim);font-size:.92rem;margin-top:6px}
+
+/* ---------- hero figure ---------- */
+.figure-frame{
+  border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--card-border);
+  box-shadow:0 24px 70px rgba(0,0,0,.55), 0 0 60px rgba(34,211,238,.10);
+  position:relative;
+}
+.figure-frame img{display:block;width:100%;height:auto}
+.figure-frame::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, transparent 78%, rgba(3,16,30,.65));
+}
+.figure-caption{text-align:center;color:var(--ink-dim);font-size:.9rem;margin-top:16px;font-style:italic}
+
+/* ---------- code coming soon ---------- */
+.terminal{
+  max-width:760px;margin:0 auto;border-radius:16px;overflow:hidden;
+  border:1px solid rgba(120,200,255,.18);
+  background:rgba(2,10,20,.85);backdrop-filter:blur(8px);
+  box-shadow:0 22px 60px rgba(0,0,0,.55);
+  font-family:'JetBrains Mono',monospace;
+}
+.terminal-bar{display:flex;gap:8px;align-items:center;padding:13px 18px;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(120,200,255,.1)}
+.t-dot{width:12px;height:12px;border-radius:50%}
+.t-red{background:#ff5f57}.t-yellow{background:#febc2e}.t-green{background:#28c840}
+.terminal-title{margin-left:10px;color:var(--ink-dim);font-size:.8rem}
+.terminal-body{padding:26px 26px 30px;font-size:.92rem;line-height:2}
+.terminal-body .prompt{color:var(--aqua)}
+.terminal-body .cmd{color:var(--ink)}
+.terminal-body .out{color:var(--ink-dim)}
+.terminal-body .hl{color:var(--amber)}
+.cursor{display:inline-block;width:9px;height:1.1em;background:var(--cyan);vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- citation ---------- */
+.cite-box{
+  position:relative;max-width:820px;margin:0 auto;
+  border-radius:var(--radius);border:1px solid var(--card-border);
+  background:rgba(2,10,20,.7);padding:30px 30px 26px;
+  font-family:'JetBrains Mono',monospace;font-size:.85rem;line-height:1.8;
+  color:var(--ink-dim);overflow-x:auto;
+}
+.cite-box .k{color:var(--cyan)}.cite-box .v{color:var(--aqua)}
+.copy-btn{
+  position:absolute;top:14px;right:14px;
+  padding:8px 16px;border-radius:10px;border:1px solid var(--card-border);
+  background:var(--card);color:var(--ink);font-family:'Space Grotesk',sans-serif;
+  font-size:.82rem;font-weight:600;cursor:pointer;transition:all .25s;
+}
+.copy-btn:hover{border-color:var(--cyan);box-shadow:var(--glow)}
+.copy-btn.copied{background:rgba(52,230,192,.18);border-color:var(--aqua);color:var(--aqua)}
+
+/* ---------- team ---------- */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:860px;margin:0 auto}
+.person{
+  display:flex;gap:20px;align-items:center;padding:26px;
+  border-radius:var(--radius);background:var(--card);border:1px solid var(--card-border);
+  transition:transform .3s, border-color .3s;
+}
+.person:hover{transform:translateY(-5px);border-color:rgba(139,92,246,.45)}
+.avatar{
+  width:64px;height:64px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:1.3rem;color:#02141f;
+  background:linear-gradient(135deg,var(--aqua),var(--blue));
+  box-shadow:0 0 24px rgba(52,230,192,.35);
+}
+.person:nth-child(2) .avatar{background:linear-gradient(135deg,var(--violet),var(--cyan))}
+.person h4{font-size:1.05rem}
+.person p{color:var(--ink-dim);font-size:.88rem}
+
+/* ---------- footer ---------- */
+footer{
+  padding:60px 24px 44px;text-align:center;
+  border-top:1px solid rgba(120,200,255,.08);
+  color:var(--ink-dim);font-size:.9rem;
+  background:rgba(2,8,16,.6);
+}
+footer a{color:var(--aqua);text-decoration:none}
+footer a:hover{text-decoration:underline}
+.footer-wave{margin-bottom:18px;font-size:1.4rem;letter-spacing:6px;color:var(--cyan);animation:shimmer-op 3s ease-in-out infinite}
+@keyframes shimmer-op{0%,100%{opacity:.4}50%{opacity:1}}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="aurora"></div>
+<canvas id="flow-canvas"></canvas>
+
+<nav>
+  <a class="logo" href="#top"><span class="logo-dot"></span>microplastic_modeling</a>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#framework">Framework</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#code">Code</a>
+    <a href="#cite">Cite</a>
+    <a href="#team">Team</a>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero" id="top">
+  <span class="badge"><span class="spark">✦</span> Open-Source Research Code <span class="spark">✦</span></span>
+  <h1>Microplastic Transport in Water Systems,<br><span class="gradient-text">Simulated at GPU Speed</span></h1>
+  <p class="hero-sub">
+    A <b>GPU-accelerated Eulerian–Lagrangian framework</b> for simulating the transport,
+    dispersion, and fate of microplastic particles in turbulent open-channel flows —
+    with and without vegetation.
+  </p>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="https://github.com/HydroCFD/microplastic_modeling">⭐ View on GitHub</a>
+    <a class="btn btn-ghost" href="#cite">📖 Cite This Work</a>
+  </div>
+  <a class="scroll-hint" href="#about">⌄</a>
+</header>
+
+<svg class="wave-divider" viewBox="0 0 1440 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <path fill="rgba(34,211,238,0.06)" d="M0,40 C240,90 480,0 720,40 C960,80 1200,10 1440,50 L1440,100 L0,100 Z"/>
+</svg>
+
+<!-- ================= ABOUT ================= -->
+<section id="about">
+  <div class="container">
+    <span class="section-tag reveal">Why It Matters</span>
+    <h2 class="section-title reveal">Tiny Particles. <span class="gradient-text">Global Problem.</span></h2>
+    <p class="section-lead reveal">
+      Microplastics persist in rivers, channels, estuaries, and coastal waters.
+      Predicting where they travel — and where they accumulate — requires physics-based
+      models that capture turbulence, buoyancy, and vegetation effects without the cost
+      of fully resolved CFD-DEM simulation.
+    </p>
+    <div class="figure-frame reveal">
+      <img src="assets/readme-flow-microplastic-animated.gif" alt="Animated visualization of microplastic particles moving through a vegetated open-channel flow" loading="lazy">
+    </div>
+    <p class="figure-caption reveal">Microplastic particles advecting through a vegetated open-channel flow.</p>
+  </div>
+</section>
+
+<!-- ================= PHYSICS TICKER ================= -->
+<div class="ticker-wrap reveal">
+  <div class="ticker">
+    <span>Nonlinear hydrodynamic drag</span>
+    <span>Buoyancy</span>
+    <span>Added mass</span>
+    <span>Saffman lift</span>
+    <span>Stochastic turbulent dispersion</span>
+    <span>Wall interaction</span>
+    <span>Exponential drag integrator</span>
+    <span>Breakthrough-curve diagnostics</span>
+    <span>Nonlinear hydrodynamic drag</span>
+    <span>Buoyancy</span>
+    <span>Added mass</span>
+    <span>Saffman lift</span>
+    <span>Stochastic turbulent dispersion</span>
+    <span>Wall interaction</span>
+    <span>Exponential drag integrator</span>
+    <span>Breakthrough-curve diagnostics</span>
+  </div>
+</div>
+
+<!-- ================= FRAMEWORK ================= -->
+<section id="framework">
+  <div class="container">
+    <span class="section-tag reveal">The Framework</span>
+    <h2 class="section-title reveal">Built to Bridge the Gap</h2>
+    <p class="section-lead reveal">
+      Between simplified tracer models and computationally expensive fully resolved
+      simulations sits a practical middle ground — dominant physics, GPU efficiency.
+    </p>
+    <div class="grid">
+      <div class="card reveal">
+        <div class="card-icon">🌊</div>
+        <h3>Vegetation-Aware Hydrodynamics</h3>
+        <p>Carrier flow computed with OpenFOAM using a vegetation-aware RANS turbulence model, capturing momentum loss and turbulence structure inside canopies.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">⚡</div>
+        <h3>GPU-Accelerated Particle Tracking</h3>
+        <p>A custom Python/CuPy Lagrangian solver advances every particle individually — force-based, massively parallel, built for scenario testing at scale.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🧲</div>
+        <h3>Force-Based Particle Physics</h3>
+        <p>Drag, buoyancy, added mass, Saffman lift, stochastic turbulent dispersion, and wall interaction — the forces that decide where a particle ends up.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🧪</div>
+        <h3>Validated Against Experiments</h3>
+        <p>Evaluated against laboratory channel-flow measurements across no-vegetation, low-vegetation, and high-vegetation configurations.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">📈</div>
+        <h3>Publication-Ready Diagnostics</h3>
+        <p>Breakthrough curves, particle distributions, velocity-profile comparisons, and animation workflows — straight from simulation to figure.</p>
+      </div>
+      <div class="card reveal">
+        <div class="card-icon">🌍</div>
+        <h3>Environmental-Scale Ambition</h3>
+        <p>Efficient enough for scenario testing in rivers, channels, and coastal systems — where the microplastic question actually lives.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PIPELINE ================= -->
+<section id="pipeline">
+  <div class="container">
+    <span class="section-tag reveal">How It Works</span>
+    <h2 class="section-title reveal">From Flow Field to Fate</h2>
+    <div class="pipeline reveal">
+      <div class="pipe-step">
+        <div class="pipe-num">1</div>
+        <h4>Solve the Flow</h4>
+        <p>OpenFOAM computes the turbulent, vegetation-affected carrier flow.</p>
+      </div>
+      <div class="pipe-arrow">➜</div>
+      <div class="pipe-step">
+        <div class="pipe-num">2</div>
+        <h4>Seed Particles</h4>
+        <p>Microplastic particles are released with realistic size, density, and buoyancy.</p>
+      </div>
+      <div class="pipe-arrow">➜</div>
+      <div class="pipe-step">
+        <div class="pipe-num">3</div>
+        <h4>Track on GPU</h4>
+        <p>The CuPy solver integrates forces on every particle in parallel.</p>
+      </div>
+      <div class="pipe-arrow">➜</div>
+      <div class="pipe-step">
+        <div class="pipe-num">4</div>
+        <h4>Analyze &amp; Compare</h4>
+        <p>Breakthrough curves and distributions are compared with lab data.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section>
+  <div class="container">
+    <div class="stats">
+      <div class="stat reveal"><div class="stat-value" data-count="3">0</div><div class="stat-label">Vegetation configurations validated</div></div>
+      <div class="stat reveal"><div class="stat-value" data-count="6">0</div><div class="stat-label">Physical force mechanisms modeled</div></div>
+      <div class="stat reveal"><div class="stat-value" data-count="2">0</div><div class="stat-label">Coupled solvers (Eulerian + Lagrangian)</div></div>
+      <div class="stat reveal"><div class="stat-value" data-count="1">0</div><div class="stat-label">GPU is all you need</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CODE ================= -->
+<section id="code">
+  <div class="container">
+    <span class="section-tag reveal">The Code</span>
+    <h2 class="section-title reveal">Source Code <span class="gradient-text">Coming Soon</span></h2>
+    <p class="section-lead reveal">
+      The full solver, OpenFOAM case setups, validation scripts, and plotting workflows
+      will be released in this repository alongside the publication.
+    </p>
+    <div class="terminal reveal">
+      <div class="terminal-bar">
+        <span class="t-dot t-red"></span><span class="t-dot t-yellow"></span><span class="t-dot t-green"></span>
+        <span class="terminal-title">microplastic_modeling — bash</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$</span> <span class="cmd">git clone https://github.com/HydroCFD/microplastic_modeling.git</span></div>
+        <div><span class="out">Cloning into 'microplastic_modeling'...</span></div>
+        <div><span class="prompt">$</span> <span class="cmd">python -m pip install -r requirements.txt</span></div>
+        <div><span class="prompt">$</span> <span class="cmd">python scripts/generate_visuals.py --source-root ".."</span></div>
+        <div><span class="out">→ figures/   → animations/</span></div>
+        <div><span class="out"><span class="hl">★ Full particle solver release: watch this repo</span></span></div>
+        <div><span class="prompt">$</span> <span class="cursor"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CITE ================= -->
+<section id="cite">
+  <div class="container">
+    <span class="section-tag reveal">Citation</span>
+    <h2 class="section-title reveal">Cite Our Work</h2>
+    <p class="section-lead reveal">
+      If you use this repository, the numerical codes, or the generated data products
+      in your research, please cite:
+    </p>
+    <div class="cite-box reveal" id="bibtex-box">
+      <button class="copy-btn" id="copy-bib" aria-label="Copy BibTeX to clipboard">Copy BibTeX</button>
+<pre style="font-family:inherit;white-space:pre-wrap" id="bibtex-text">@misc{microplastic_modeling,
+  <span class="k">author</span> = <span class="v">{Goodarzi, Danial and Mohammadian, Majid}</span>,
+  <span class="k">title</span>  = <span class="v">{Microplastic Modeling in Water Systems: Numerical
+            Codes for Microplastic Transport and Dispersion}</span>,
+  <span class="k">year</span>   = <span class="v">{2026}</span>,
+  <span class="k">url</span>    = <span class="v">{https://github.com/HydroCFD/microplastic_modeling}</span>,
+  <span class="k">note</span>   = <span class="v">{GitHub repository}</span>
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TEAM ================= -->
+<section id="team">
+  <div class="container">
+    <span class="section-tag reveal">The People</span>
+    <h2 class="section-title reveal">Contributors</h2>
+    <div class="team">
+      <div class="person reveal">
+        <div class="avatar">DG</div>
+        <div>
+          <h4>Danial Goodarzi</h4>
+          <p>Postdoctoral researcher — fluid mechanics, environmental hydraulics, CFD, microplastic transport. Lead developer.</p>
+        </div>
+      </div>
+      <div class="person reveal">
+        <div class="avatar">MM</div>
+        <div>
+          <h4>Prof. Majid Mohammadian</h4>
+          <p>Professor, Department of Civil Engineering, University of Ottawa. Academic supervisor and research advisor.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-wave">～ ～ ～</div>
+  <p><a href="https://github.com/HydroCFD/microplastic_modeling">microplastic_modeling</a> — numerical tools for microplastic transport in water systems.</p>
+  <p style="margin-top:8px;opacity:.7">© 2026 Goodarzi &amp; Mohammadian · University of Ottawa</p>
+</footer>
+
+<script>
+/* ============ particle flow field (microplastics drifting) ============ */
+(function(){
+  const canvas = document.getElementById('flow-canvas');
+  const ctx = canvas.getContext('2d');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W, H, particles = [];
+  const COLORS = ['rgba(34,211,238,', 'rgba(52,230,192,', 'rgba(139,92,246,', 'rgba(96,165,250,', 'rgba(251,191,36,'];
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const N = Math.min(110, Math.floor(W * H / 16000));
+  function makeParticle(fresh){
+    return {
+      x: fresh ? -10 : Math.random() * W,
+      y: Math.random() * H,
+      r: 0.8 + Math.random() * 2.6,
+      speed: 0.25 + Math.random() * 0.9,
+      phase: Math.random() * Math.PI * 2,
+      amp: 8 + Math.random() * 26,
+      freq: 0.002 + Math.random() * 0.004,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: 0.25 + Math.random() * 0.5
+    };
+  }
+  for (let i = 0; i < N; i++) particles.push(makeParticle(false));
+
+  let mouse = {x: -9999, y: -9999};
+  window.addEventListener('pointermove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  let t = 0;
+  function frame(){
+    ctx.clearRect(0, 0, W, H);
+    t += 1;
+    for (const p of particles){
+      // channel-flow drift: left → right with vertical sinusoidal wander
+      p.x += p.speed;
+      const yOff = Math.sin(t * p.freq * 6 + p.phase) * p.amp * 0.02;
+      p.y += yOff;
+
+      // gentle repulsion from cursor — particles swirl around it
+      const dx = p.x - mouse.x, dy = p.y - mouse.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 14400){
+        const d = Math.sqrt(d2) || 1;
+        const f = (120 - d) / 120;
+        p.x += (dx / d) * f * 1.6;
+        p.y += (dy / d) * f * 1.6;
+      }
+
+      if (p.x > W + 12) Object.assign(p, makeParticle(true));
+      if (p.y < -12) p.y = H + 10;
+      if (p.y > H + 12) p.y = -10;
+
+      const tw = 0.75 + 0.25 * Math.sin(t * 0.03 + p.phase);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + (p.alpha * tw) + ')';
+      ctx.fill();
+    }
+    // faint connecting filaments between near particles
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i < particles.length; i++){
+      for (let j = i + 1; j < particles.length; j++){
+        const a = particles[i], b = particles[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 7000){
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = 'rgba(34,211,238,' + (0.06 * (1 - d2 / 7000)) + ')';
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  if (!reduced) frame();
+})();
+
+/* ============ scroll reveal ============ */
+(function(){
+  const obs = new IntersectionObserver(entries => {
+    for (const e of entries){
+      if (e.isIntersecting){
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    }
+  }, {threshold: 0.12});
+  document.querySelectorAll('.reveal').forEach((el, i) => {
+    el.style.transitionDelay = (i % 4) * 0.08 + 's';
+    obs.observe(el);
+  });
+})();
+
+/* ============ card cursor glow ============ */
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+    card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+  });
+});
+
+/* ============ animated counters ============ */
+(function(){
+  const obs = new IntersectionObserver(entries => {
+    for (const e of entries){
+      if (!e.isIntersecting) continue;
+      const el = e.target, target = +el.dataset.count;
+      const dur = 1200, t0 = performance.now();
+      (function tick(now){
+        const k = Math.min(1, (now - t0) / dur);
+        el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
+        if (k < 1) requestAnimationFrame(tick);
+      })(t0);
+      obs.unobserve(el);
+    }
+  }, {threshold: 0.6});
+  document.querySelectorAll('.stat-value').forEach(el => obs.observe(el));
+})();
+
+/* ============ copy bibtex ============ */
+document.getElementById('copy-bib').addEventListener('click', function(){
+  const text = document.getElementById('bibtex-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    this.textContent = '✓ Copied!';
+    this.classList.add('copied');
+    setTimeout(() => { this.textContent = 'Copy BibTeX'; this.classList.remove('copied'); }, 2200);
+  });
+});
+</script>
+</body>
+</html>
