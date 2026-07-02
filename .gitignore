@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Generated figures and animations are easy to rebuild.
+figures/*
+!figures/.gitkeep
+animations/*
+!animations/.gitkeep
+
+# Large local research files and simulation outputs.
+*.pdf
+*.xlsx
+*.xls
+*.slf
+*.vtk
+*.msh
+*.2dm
+*.out
+*.pt
+Results/
+results/
+vtk_out/
+btc_out/
+conc_out/
+OpenFOAM/
+Telemac/
+experimental_data/
+verification_hydro_data/
+ref/
+
