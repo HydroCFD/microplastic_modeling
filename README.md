@@ -1,6 +1,6 @@
 # Microplastic Modeling in Water Systems
 
-![Microplastic transport through turbulent channel flow](assets/readme-flow-microplastic-hero.png)
+![Animated microplastic transport through turbulent channel flow](assets/readme-flow-microplastic-animated.gif)
 
 This repository contains numerical tools for simulating microplastic transport in water systems. The current focus is turbulent open-channel flow with and without vegetation, where microplastic motion is controlled by advection, turbulent dispersion, buoyancy, drag, lift, wall interaction, and the structure of the carrier flow.
 
