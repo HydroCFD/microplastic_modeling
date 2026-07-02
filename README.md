@@ -86,6 +86,32 @@ Outputs are written to:
 - Breakthrough-curve and particle-distribution analysis tools.
 - Publication-quality plotting and animation workflows.
 
+## Contributors
+
+- Danial Goodarzi  
+  Postdoctoral researcher in fluid mechanics, environmental hydraulics, CFD, and microplastic transport modeling. Lead developer and main contributor to this repository.
+
+- Prof. Majid Mohammadian  
+  Professor, Department of Civil Engineering, University of Ottawa. Academic supervisor and research advisor for this project.
+
+## Cite Our Work
+
+If you use this repository, the numerical codes, or the generated data products in your research, please cite the related manuscript once the final bibliographic information is available:
+
+1. Goodarzi, D., & Mohammadian, A. (in preparation). *A GPU-accelerated Eulerian-Lagrangian model for microplastic transport in water systems*. Manuscript in preparation.
+
+You can also cite the repository directly:
+
+```bibtex
+@misc{microplastic_modeling,
+  author       = {Goodarzi, Danial and Mohammadian, Majid},
+  title        = {Microplastic Modeling in Water Systems: Numerical Codes for Microplastic Transport and Dispersion},
+  year         = {2026},
+  url          = {https://github.com/HydroCFD/microplastic_modeling},
+  note         = {GitHub repository}
+}
+```
+
 ## Data Policy
 
 Large OpenFOAM, TELEMAC, VTK, Excel, PDF, and result folders are intentionally excluded by `.gitignore`. For GitHub, keep this repository focused on source code, documentation, small processed examples, figures, and animations. Large datasets should be archived through Zenodo, OSF, institutional storage, Git LFS, or a separate data release.
