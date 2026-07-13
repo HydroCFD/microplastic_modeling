@@ -341,7 +341,7 @@ footer a:hover{text-decoration:underline}
 <canvas id="flow-canvas"></canvas>
 
 <nav>
-  <a class="logo" href="#top"><span class="logo-dot"></span>microplastic_modeling</a>
+  <a class="logo" href="#top"><span class="logo-dot"></span>Microplastic modeling</a>
   <div class="nav-links">
     <a href="#about">About</a>
     <a href="#framework">Framework</a>
@@ -358,7 +358,7 @@ footer a:hover{text-decoration:underline}
   <h1>Microplastic Transport in Water Systems,<br><span class="gradient-text">Simulated at GPU Speed</span></h1>
   <p class="hero-sub">
     A <b>GPU-accelerated Eulerian–Lagrangian framework</b> for simulating the transport,
-    dispersion, and fate of microplastic particles in turbulent open-channel flows —
+    dispersion, and fate of microplastic particles in turbulent open-channel flows,
     with and without vegetation.
   </p>
   <div class="hero-cta">
@@ -379,7 +379,7 @@ footer a:hover{text-decoration:underline}
     <h2 class="section-title reveal">Tiny Particles. <span class="gradient-text">Global Problem.</span></h2>
     <p class="section-lead reveal">
       Microplastics persist in rivers, channels, estuaries, and coastal waters.
-      Predicting where they travel — and where they accumulate — requires physics-based
+      Predicting where they travel, and where they accumulate, requires physics-based
       models that capture turbulence, buoyancy, and vegetation effects without the cost
       of fully resolved CFD-DEM simulation.
     </p>
@@ -419,7 +419,7 @@ footer a:hover{text-decoration:underline}
     <h2 class="section-title reveal">Built to Bridge the Gap</h2>
     <p class="section-lead reveal">
       Between simplified tracer models and computationally expensive fully resolved
-      simulations sits a practical middle ground — dominant physics, GPU efficiency.
+      simulations sits a practical middle ground: dominant physics, GPU efficiency.
     </p>
     <div class="grid">
       <div class="card reveal">
@@ -430,12 +430,12 @@ footer a:hover{text-decoration:underline}
       <div class="card reveal">
         <div class="card-icon">⚡</div>
         <h3>GPU-Accelerated Particle Tracking</h3>
-        <p>A custom Python/CuPy Lagrangian solver advances every particle individually — force-based, massively parallel, built for scenario testing at scale.</p>
+        <p>A custom Python/CuPy Lagrangian solver advances every particle individually: force-based, massively parallel, built for scenario testing at scale.</p>
       </div>
       <div class="card reveal">
         <div class="card-icon">🧲</div>
         <h3>Force-Based Particle Physics</h3>
-        <p>Drag, buoyancy, added mass, Saffman lift, stochastic turbulent dispersion, and wall interaction — the forces that decide where a particle ends up.</p>
+        <p>Drag, buoyancy, added mass, Saffman lift, stochastic turbulent dispersion, and wall interaction: the forces that decide where a particle ends up.</p>
       </div>
       <div class="card reveal">
         <div class="card-icon">🧪</div>
@@ -445,12 +445,12 @@ footer a:hover{text-decoration:underline}
       <div class="card reveal">
         <div class="card-icon">📈</div>
         <h3>Publication-Ready Diagnostics</h3>
-        <p>Breakthrough curves, particle distributions, velocity-profile comparisons, and animation workflows — straight from simulation to figure.</p>
+        <p>Breakthrough curves, particle distributions, velocity-profile comparisons, and animation workflows, straight from simulation to figure.</p>
       </div>
       <div class="card reveal">
         <div class="card-icon">🌍</div>
         <h3>Environmental-Scale Ambition</h3>
-        <p>Efficient enough for scenario testing in rivers, channels, and coastal systems — where the microplastic question actually lives.</p>
+        <p>Efficient enough for scenario testing in rivers, channels, and coastal systems, where the microplastic question actually lives.</p>
       </div>
     </div>
   </div>
@@ -513,7 +513,7 @@ footer a:hover{text-decoration:underline}
     <div class="terminal reveal">
       <div class="terminal-bar">
         <span class="t-dot t-red"></span><span class="t-dot t-yellow"></span><span class="t-dot t-green"></span>
-        <span class="terminal-title">microplastic_modeling — bash</span>
+        <span class="terminal-title">microplastic_modeling: bash</span>
       </div>
       <div class="terminal-body">
         <div><span class="prompt">$</span> <span class="cmd">git clone https://github.com/HydroCFD/microplastic_modeling.git</span></div>
@@ -561,7 +561,7 @@ footer a:hover{text-decoration:underline}
         <div class="avatar">DG</div>
         <div>
           <h4>Danial Goodarzi</h4>
-          <p>Postdoctoral researcher — fluid mechanics, environmental hydraulics, CFD, microplastic transport. Lead developer.</p>
+          <p>Postdoctoral researcher in fluid mechanics, environmental hydraulics, CFD, and microplastic transport. Lead developer.</p>
         </div>
       </div>
       <div class="person reveal">
@@ -577,7 +577,7 @@ footer a:hover{text-decoration:underline}
 
 <footer>
   <div class="footer-wave">～ ～ ～</div>
-  <p><a href="https://github.com/HydroCFD/microplastic_modeling">microplastic_modeling</a> — numerical tools for microplastic transport in water systems.</p>
+  <p><a href="https://github.com/HydroCFD/microplastic_modeling">Microplastic modeling</a>: numerical tools for microplastic transport in water systems.</p>
   <p style="margin-top:8px;opacity:.7">© 2026 Goodarzi &amp; Mohammadian · University of Ottawa</p>
 </footer>
 
@@ -626,7 +626,7 @@ footer a:hover{text-decoration:underline}
       const yOff = Math.sin(t * p.freq * 6 + p.phase) * p.amp * 0.02;
       p.y += yOff;
 
-      // gentle repulsion from cursor — particles swirl around it
+      // gentle repulsion from cursor so particles swirl around it
       const dx = p.x - mouse.x, dy = p.y - mouse.y;
       const d2 = dx * dx + dy * dy;
       if (d2 < 14400){
