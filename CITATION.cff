@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+title: "Microplastic Modeling in Water Systems: a GPU accelerated Eulerian-Lagrangian model for microplastics transport"
+authors:
+  - family-names: Goodarzi
+    given-names: Danial
+    affiliation: "Department of Civil Engineering, University of Ottawa"
+    orcid: "https://orcid.org/0000-0002-1621-5052"
+  - family-names: Mohammadian
+    given-names: Abdolmajid
+    affiliation: "Department of Civil Engineering, University of Ottawa"
+  - family-names: Pilechi
+    given-names: Abolghasem
+    affiliation: "University of Ottawa; Ocean, Coastal & River Engineering Research Centre, National Research Council Canada"
+  - family-names: Abolfathi
+    given-names: Soroush
+    affiliation: "School of Engineering, University of Warwick"
+repository-code: "https://github.com/HydroCFD/microplastic_modeling"
+url: "https://hydrocfd.github.io/vegetated-channel-microplastics/"
+type: software
+keywords:
+  - microplastics
+  - Eulerian-Lagrangian
+  - GPU
+  - vegetated channel
+  - OpenFOAM
+  - particle tracking
