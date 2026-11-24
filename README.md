@@ -1,5 +1,8 @@
 # Microplastic Modeling in Water Systems
 
+> [!NOTE]
+> The code of the GPU particle solver will be made available in this repository after the paper is published.
+
 ![Microplastics carried through a flume with submerged vegetation: neutrally buoyant microplastics travel with the flow, lighter ones rise to the free surface and denser ones settle and deposit on the bed](assets/readme-vegetated-flume.gif)
 
 *Illustration of the processes in the model (not model output). Neutrally buoyant microplastics in black, microplastics lighter than the water in blue, denser ones in red, deposited ones in brown.*
@@ -7,8 +10,6 @@
 This repository accompanies the paper **A GPU Accelerated Eulerian-Lagrangian Model for Microplastics Transport in Water Systems** by Danial Goodarzi, Abdolmajid Mohammadian, Abolghasem Pilechi and Soroush Abolfathi (manuscript in preparation).
 
 **Project page:** <https://hydrocfd.github.io/vegetated-channel-microplastics/>
-
-> **Note:** The source code of the model will be uploaded to this repository after the paper is published.
 
 ## What the model does
 
